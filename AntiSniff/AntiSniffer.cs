@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AntiSniff
@@ -36,8 +37,9 @@ namespace AntiSniff
         "http"
         };
         private static Process CurrentProcess = Process.GetCurrentProcess();
+        private static bool IsDetected;
 
-        private static bool CheckProcesses()
+        private static void CheckProcesses()
         {
             Process[] TaskList = Process.GetProcesses();
             foreach (Process Run in TaskList)
@@ -46,14 +48,13 @@ namespace AntiSniff
                 {
                     if (Run.ProcessName.ToLower().Contains(Name))
                     {
-                        return false;
+                        IsDetected = true;
                     }
                 }
             }
-            return true;
         }
 
-        private static bool SendRequest()
+        private static void SendRequest()
         {
             try
             {
@@ -74,96 +75,104 @@ namespace AntiSniff
                 {
                     if (response.StatusCode != System.Net.HttpStatusCode.OK)
                     {
-                        return false;
+                        IsDetected = true;
                     }
                 }
             }
             catch
             {
-                return false;
+                IsDetected = true;
             }
-            return true;
         }
 
-		private static bool ValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
-		{
-			bool flag = sslPolicyErrors > SslPolicyErrors.None;
-			bool result;
-			if (flag)
-			{
-				result = false;
-			}
-			else
-			{
-				bool flag2 = chain.ChainPolicy.VerificationFlags == X509VerificationFlags.NoFlag && chain.ChainPolicy.RevocationMode == X509RevocationMode.Online;
-				if (flag2)
-				{
-					result = true;
-				}
-				else
-				{
-					X509Chain x509Chain = new X509Chain();
-					X509ChainElementCollection chainElements = chain.ChainElements;
-					for (int i = 1; i < chainElements.Count - 1; i++)
-					{
-						x509Chain.ChainPolicy.ExtraStore.Add(chainElements[i].Certificate);
-					}
-					result = x509Chain.Build(chainElements[0].Certificate);
-				}
-			}
-			return result;
-		}
-
-		private static bool CheckRequest()
-		{
-			try
-			{
-                bool value = SendRequest();
-                if (!value)
-                {
-					return false;
-                }
-				ServicePointManager.CheckCertificateRevocationList = true;
-				HttpWebRequest httpWebRequest = WebRequest.Create("https://google.com") as HttpWebRequest;
-				httpWebRequest.Timeout = 10000;
-				httpWebRequest.ContinueTimeout = 10000;
-				httpWebRequest.ReadWriteTimeout = 10000;
-				httpWebRequest.KeepAlive = true;
-				httpWebRequest.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:75.0) Gecko/20100101 Firefox/75.0";
-				httpWebRequest.Host = "www.google.com";
-				httpWebRequest.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
-				httpWebRequest.Method = "GET";
-				httpWebRequest.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidationCallback);
-				using (HttpWebResponse httpWebResponse = httpWebRequest.GetResponse() as HttpWebResponse)
-				{
-					bool flag = httpWebResponse.StatusCode == HttpStatusCode.OK;
-					if (flag)
-					{
-						httpWebResponse.Close();
-                        bool process = CheckProcesses();
-                        return process;
-                    }
-					else
-					{
-						httpWebResponse.Close();
-                        return false;
-					}
-				}
-			}
-			catch
-			{
-                return false;
-			}
-        }
-
-		public static void Start()
+        private static bool ValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
-            bool value = CheckRequest();
-            if (!value)
+            bool flag = sslPolicyErrors > SslPolicyErrors.None;
+            bool result;
+            if (flag)
             {
-                AutoClosingMessageBox.Show("Close Sniffer and Run Again!", "Suspicious Program Detected", 3000);
-                CurrentProcess.Kill();
+                result = false;
             }
+            else
+            {
+                bool flag2 = chain.ChainPolicy.VerificationFlags == X509VerificationFlags.NoFlag && chain.ChainPolicy.RevocationMode == X509RevocationMode.Online;
+                if (flag2)
+                {
+                    result = true;
+                }
+                else
+                {
+                    X509Chain x509Chain = new X509Chain();
+                    X509ChainElementCollection chainElements = chain.ChainElements;
+                    for (int i = 1; i < chainElements.Count - 1; i++)
+                    {
+                        x509Chain.ChainPolicy.ExtraStore.Add(chainElements[i].Certificate);
+                    }
+                    result = x509Chain.Build(chainElements[0].Certificate);
+                }
+            }
+            return result;
+        }
+
+        private static void CheckRequest()
+        {
+            try
+            {
+                SendRequest();
+                ServicePointManager.CheckCertificateRevocationList = true;
+                HttpWebRequest httpWebRequest = WebRequest.Create("https://google.com") as HttpWebRequest;
+                httpWebRequest.Timeout = 10000;
+                httpWebRequest.ContinueTimeout = 10000;
+                httpWebRequest.ReadWriteTimeout = 10000;
+                httpWebRequest.KeepAlive = true;
+                httpWebRequest.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:75.0) Gecko/20100101 Firefox/75.0";
+                httpWebRequest.Host = "www.google.com";
+                httpWebRequest.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
+                httpWebRequest.Method = "GET";
+                httpWebRequest.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(ValidationCallback);
+                using (HttpWebResponse httpWebResponse = httpWebRequest.GetResponse() as HttpWebResponse)
+                {
+                    if (httpWebResponse.StatusCode != HttpStatusCode.OK)
+                    {
+                        IsDetected = true;
+                    }
+                }
+            }
+            catch
+            {
+                IsDetected = true;
+            }
+        }
+
+        private static void Kill()
+        {
+            CurrentProcess.Kill();
+        }
+
+        private static void CheckDetect()
+        {
+            while (true)
+            {
+                if (IsDetected)
+                {
+                    AutoClosingMessageBox.Show("Close Sniffer and Run Again!", "Suspicious Program Detected", 3000);
+                    Kill();
+                }
+            }
+        }
+
+        public static void Start(bool checkprocesslist, bool checkdata)
+        {
+            Task.Run(() =>
+            {
+                CheckDetect();
+            });
+
+            if (checkprocesslist)
+                CheckProcesses();
+
+            if (checkdata)
+                CheckRequest();
         }
     }
 }

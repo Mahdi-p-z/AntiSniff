@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "1c579327-fb64-4893-8b84-3ef30cb5b9fb": {
+      "ProjectGuid": "1c579327-fb64-4893-8b84-3ef30cb5b9fb",
+      "DisplayName": "AntiSniff",
+      "ColorIndex": 0
+    }
+  },
+  "NextColorIndex": 1
+}
