@@ -36,8 +36,6 @@ namespace AntiSniff
         "dump",
         "http"
         };
-        private static Process CurrentProcess = Process.GetCurrentProcess();
-        private static bool IsDetected;
 
         private static void CheckProcesses()
         {
@@ -48,7 +46,7 @@ namespace AntiSniff
                 {
                     if (Run.ProcessName.ToLower().Contains(Name))
                     {
-                        IsDetected = true;
+                        Kill();
                     }
                 }
             }
@@ -75,13 +73,13 @@ namespace AntiSniff
                 {
                     if (response.StatusCode != System.Net.HttpStatusCode.OK)
                     {
-                        IsDetected = true;
+                        Kill();
                     }
                 }
             }
             catch
             {
-                IsDetected = true;
+                Kill();
             }
         }
 
@@ -134,40 +132,23 @@ namespace AntiSniff
                 {
                     if (httpWebResponse.StatusCode != HttpStatusCode.OK)
                     {
-                        IsDetected = true;
+                        Kill();
                     }
                 }
             }
             catch
             {
-                IsDetected = true;
+                Kill();
             }
         }
 
         private static void Kill()
         {
-            CurrentProcess.Kill();
-        }
-
-        private static void CheckDetect()
-        {
-            while (true)
-            {
-                if (IsDetected)
-                {
-                    AutoClosingMessageBox.Show("Close Sniffer and Run Again!", "Suspicious Program Detected", 3000);
-                    Kill();
-                }
-            }
+            Process.GetCurrentProcess().Kill();
         }
 
         public static void Start(bool checkprocesslist, bool checkdata)
         {
-            Task.Run(() =>
-            {
-                CheckDetect();
-            });
-
             if (checkprocesslist)
                 CheckProcesses();
 

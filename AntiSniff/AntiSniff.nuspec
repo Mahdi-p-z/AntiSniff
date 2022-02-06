@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package >
   <metadata>
-    <id>AntiSniff</id>
-    <version>1.0.3</version>
+    <id>$id$</id>
+    <version>1.0.4</version>
     <title>AntiSniff</title>
     <authors>Ariaei</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/Mahdi-p-z/AntiSniff</projectUrl>
     <description>Library For Finding Sniffers</description>
-    <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
-    <copyright>$copyright$</copyright>
-    <tags>Tag1 Tag2</tags>
+    <copyright>Copyright ©  2022</copyright>
   </metadata>
 </package>
