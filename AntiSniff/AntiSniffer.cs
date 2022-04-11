@@ -8,11 +8,14 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace AntiSniff
 {
     public static class AntiSniffer
     {
+        public enum CheckType { Processes, Network, Both }
+
         private static List<string> BlackList = new List<string> {
         "wireshark",
         "wire shark",
@@ -34,8 +37,10 @@ namespace AntiSniff
         "analyzer",
         "analizer",
         "dump",
-        "http"
+        "http",
+        "action"
         };
+        private static bool showMessage = true;
 
         private static void CheckProcesses()
         {
@@ -144,16 +149,32 @@ namespace AntiSniff
 
         private static void Kill()
         {
+            if (showMessage)
+            {
+                AutoClosingMessageBox.Show("Run Again After Closing Sniffer", "AntiSniffer", MessageBoxIcon.Error, 5000);
+            }
             Process.GetCurrentProcess().Kill();
         }
 
-        public static void Start(bool checkprocesslist, bool checkdata)
+        public static void Start(CheckType type, bool ShowMessage)
         {
-            if (checkprocesslist)
-                CheckProcesses();
+            showMessage = ShowMessage;
 
-            if (checkdata)
-                CheckRequest();
+            switch (type)
+            {
+                case CheckType.Processes:
+                    CheckProcesses();
+                    break;
+
+                case CheckType.Network:
+                    CheckRequest();
+                    break;
+
+                default:
+                    CheckProcesses();
+                    CheckRequest();
+                    break;
+            }
         }
     }
 }

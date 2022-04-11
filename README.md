@@ -2,4 +2,4 @@
 ## AntiSniff Library For dotnet
 
 # Nuget
-##### Install-Package AntiSniff -Version 1.0.4
+##### Install-Package AntiSniff -Version 1.0.5

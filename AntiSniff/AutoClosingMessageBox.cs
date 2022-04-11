@@ -11,19 +11,38 @@ namespace AntiSniff
 {
     class AutoClosingMessageBox
     {
-        private AutoClosingMessageBox(string text, string caption, int timeout)
+        private System.Threading.Timer _timeoutTimer;
+
+        private string _caption;
+
+        private AutoClosingMessageBox(string text, string caption, MessageBoxButtons messagebutton, MessageBoxIcon messageicon, int timeout)
         {
             this._caption = caption;
             this._timeoutTimer = new System.Threading.Timer(new TimerCallback(this.OnTimerElapsed), null, timeout, -1);
             using (this._timeoutTimer)
             {
-                MessageBox.Show(text, caption);
+                MessageBox.Show(text, caption, messagebutton, messageicon);
             }
+        }
+
+        public static void Show(string text, string caption, MessageBoxButtons messagebutton, MessageBoxIcon messageicon, int timeout)
+        {
+            new AutoClosingMessageBox(text, caption, messagebutton, messageicon, timeout);
+        }
+
+        public static void Show(string text, string caption, MessageBoxIcon messageicon, int timeout)
+        {
+            new AutoClosingMessageBox(text, caption, MessageBoxButtons.OK, messageicon, timeout);
+        }
+
+        public static void Show(string text, string caption, MessageBoxButtons messagebutton, int timeout)
+        {
+            new AutoClosingMessageBox(text, caption, messagebutton, MessageBoxIcon.None, timeout);
         }
 
         public static void Show(string text, string caption, int timeout)
         {
-            new AutoClosingMessageBox(text, caption, timeout);
+            new AutoClosingMessageBox(text, caption, MessageBoxButtons.OK, MessageBoxIcon.None, timeout);
         }
 
         private void OnTimerElapsed(object state)
@@ -42,11 +61,5 @@ namespace AntiSniff
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         private static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
-
-        private System.Threading.Timer _timeoutTimer;
-
-        private string _caption;
-
-        private const int WM_CLOSE = 16;
     }
 }

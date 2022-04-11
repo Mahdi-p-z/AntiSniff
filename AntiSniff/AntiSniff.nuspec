@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package >
-  <metadata>
-    <id>$id$</id>
-    <version>1.0.4</version>
-    <title>AntiSniff</title>
-    <authors>Ariaei</authors>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <license type="expression">MIT</license>
-    <projectUrl>https://github.com/Mahdi-p-z/AntiSniff</projectUrl>
-    <description>Library For Finding Sniffers</description>
-    <copyright>Copyright ©  2022</copyright>
-  </metadata>
+	<metadata>
+		<id>$id$</id>
+		<version>1.0.5</version>
+		<title>AntiSniff</title>
+		<authors>Ariaei</authors>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<license type="expression">MIT</license>
+		<projectUrl>https://github.com/Mahdi-p-z/AntiSniff</projectUrl>
+		<description>Library For Finding Sniffers</description>
+		<copyright>Copyright ©  2022</copyright>
+	</metadata>
 </package>
